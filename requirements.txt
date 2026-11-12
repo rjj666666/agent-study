@@ -1,0 +1,11 @@
+python-dotenv
+loguru
+pydantic-settings
+langchain
+langgraph
+langchain-chroma
+langchain-community
+langchain-zhipu
+langchain-huggingface
+sentence-transformers
+chromadb

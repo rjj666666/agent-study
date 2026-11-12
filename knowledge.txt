@@ -1,0 +1,7 @@
+Agent开发路线：
+1. 基础ReAct工具调用
+2. LangGraph状态图
+3. RAG检索增强
+4. 多Agent协作
+5. 工程化部署
+本项目使用智谱GLM系列大模型，向量库使用Chroma。
