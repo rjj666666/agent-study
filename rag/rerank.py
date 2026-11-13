@@ -1,16 +1,14 @@
 from sentence_transformers import CrossEncoder
+from config import settings
+from utils.logger import logger
 
-# BGE 重排模型，轻量本地跑
-rerank_model = CrossEncoder("BAAI/bge-reranker-base")
+rerank_model = CrossEncoder(settings.RERANK_MODEL_NAME)
 
-def rerank_docs(query: str, docs, top_n: int = 2):
-    if not docs:
-        return []
+def rerank_docs(query: str, docs, top_n: int = None):
+    top_n = top_n or settings.RERANK_TOP_N
     pairs = [[query, doc.page_content] for doc in docs]
     scores = rerank_model.predict(pairs)
-    # 按分数从高到低排序
-    scored = list(zip(docs, scores))
-    scored.sort(key=lambda x: x[1], reverse=True)
-    # 过滤低分，分数太低直接丢弃
-    filtered = [(d, s) for d, s in scored if s > 0.0]
-    return [d for d, s in filtered[:top_n]]
+    scored_docs = sorted(zip(docs, scores), key=lambda x: x[1], reverse=True)
+    selected = [item[0] for item in scored_docs[:top_n]]
+    logger.info(f"重排后选取 {len(selected)} 条文档")
+    return selected

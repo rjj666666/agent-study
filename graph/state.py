@@ -1,6 +1,8 @@
-from typing import List, TypedDict
+from typing import Annotated, Sequence
+from typing_extensions import TypedDict
 from langchain_core.messages import BaseMessage
+from langgraph.graph.message import add_messages
+
 
 class AgentState(TypedDict):
-    messages: List[BaseMessage]
-    context: str # 用来放RAG检索出来的知识库上下文
+    messages: Annotated[Sequence[BaseMessage], add_messages]

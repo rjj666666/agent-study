@@ -1,14 +1,18 @@
 from loguru import logger
+from config import settings
 import sys
 
-# 日志配置
 logger.remove()
 logger.add(
     sys.stdout,
-    format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
     level="INFO"
 )
-logger.add("agent.log", rotation="10 MB", encoding="utf-8")
+logger.add(
+    settings.LOG_FILE,
+    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
+    level="INFO",
+    rotation="10MB"
+)
 
-if __name__ == "__main__":
-    logger.info("日志测试")
+__all__ = ["logger"]

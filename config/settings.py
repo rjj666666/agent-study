@@ -1,26 +1,27 @@
-from pathlib import Path
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings
+from dotenv import load_dotenv
+import os
 
-# 拿到 config/settings.py 所在目录，再往上一层（项目根目录 agent_study）
-BASE_DIR = Path(__file__).parent.parent
+load_dotenv()
 
 class Settings(BaseSettings):
-    OPENAI_API_KEY: str
-    OPENAI_BASE_URL: str
-    MODEL_NAME: str 
+    # 智谱（OpenAI兼容调用方式）
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    OPENAI_BASE_URL: str = os.getenv("OPENAI_BASE_URL", "")
+    MODEL_NAME: str = os.getenv("MODEL_NAME", "glm-5.3-flash")
+    LLM_TEMPERATURE: float = 0.0
 
-    CHROMA_PERSIST_DIR: str = "./chroma_db"
-    COLLECTION_NAME: str = "knowledge_base"
+    # Chroma向量库
+    CHROMA_PERSIST_PATH: str = "./chroma_db"
+    CHROMA_COLLECTION_NAME: str = "knowledge_base"
 
-    CHUNK_SIZE: int = 512
-    CHUNK_OVERLAP: int = 100
-    RETRIEVE_TOP_K: int = 3
+    # Embedding & Rerank
+    EMBEDDING_MODEL_NAME: str = "BAAI/bge-small-zh-v1.5"
+    RERANK_MODEL_NAME: str = "BAAI/bge-reranker-base"
+    RAG_TOP_K: int = 5
+    RERANK_TOP_N: int = 3
 
-    model_config = SettingsConfigDict(
-        env_file=BASE_DIR / ".env",   # ✅ 关键：绝对路径
-        env_file_encoding="utf-8"
-    )
-    
-
+    # 日志
+    LOG_FILE: str = "./agent.log"
 
 settings = Settings()
