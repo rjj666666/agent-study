@@ -1,39 +1,43 @@
+from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_chroma import Chroma
 from langchain_core.tools import tool
-from config import settings
-from rag.loader import load_txt_file
-from rag.rerank import rerank_docs
-from utils.logger import logger
+from pathlib import Path
+from config.settings import EMBED_MODEL_NAME
+from .loader import load_txt_file, load_pdf_file
+from .rerank import rerank_docs
 
-embedding = HuggingFaceEmbeddings(model_name=settings.EMBEDDING_MODEL_NAME)
+# 全局向量库实例
+vector_db = None
 
-vector_db = Chroma(
-    persist_directory=settings.CHROMA_PERSIST_PATH,
-    collection_name=settings.CHROMA_COLLECTION_NAME,
-    embedding_function=embedding
-)
+def get_embedding():
+    return HuggingFaceEmbeddings(model_name=EMBED_MODEL_NAME)
 
-def init_knowledge(file_path: str = "./knowledge.txt"):
-    chunks = load_txt_file(file_path)
-    vector_db.add_documents(chunks)
-    logger.info("知识库写入chroma完成")
+def init_knowledge(knowledge_file: Path, persist_dir: Path):
+    """初始化知识库，加载txt/pdf，构建向量库，赋值给全局vector_db"""
+    global vector_db
+    file_path_str = str(knowledge_file)
+    if file_path_str.lower().endswith(".txt"):
+        docs = load_txt_file(file_path_str)
+    elif file_path_str.lower().endswith(".pdf"):
+        docs = load_pdf_file(file_path_str)
+    else:
+        raise ValueError("仅支持 txt / pdf 文件")
 
-@tool
-def rag_search(query: str) -> str:
-    """
-    检索内部知识库，用于回答和知识库相关的问题
-    Args:
-        query: 用户检索问题
-    """
-    raw_docs = vector_db.similarity_search(query, k=settings.RAG_TOP_K)
-    if not raw_docs:
-        return "知识库没有找到相关内容"
+    embeddings = get_embedding()
+    vector_db = Chroma.from_documents(
+        documents=docs,
+        embedding=embeddings,
+        persist_directory=str(persist_dir)
+    )
+    return vector_db
+
+def rag_search(query: str, top_k: int = 5):
+    """rag检索 + CrossEncoder重排（复用你写好的rerank_docs）"""
+    if vector_db is None:
+        raise RuntimeError("请先调用 init_knowledge 初始化知识库")
+    retriever = vector_db.as_retriever(search_kwargs={"k": top_k})
+    raw_docs = retriever.invoke(query)
+    # 这里直接传给你原来的rerank，自动读取settings里的RERANK_TOP_N
     reranked_docs = rerank_docs(query, raw_docs)
-    context = "\n\n".join([doc.page_content for doc in reranked_docs])
-    return context
+    return reranked_docs
 
-def get_rag_search_tool():
-    return rag_search
-
-__all__ = ["vector_db", "init_knowledge", "rag_search", "get_rag_search_tool"]

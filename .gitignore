@@ -6,3 +6,25 @@ data/
 *.safetensors
 *.bin
 .vscode/
+# python缓存
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 环境
+.conda/
+.env
+
+# 向量库
+chroma_db/
+
+# 日志
+logs/*.log
+*.log
+audit.log
+
+# 临时文件
+*.bak
+*.tmp
+.vscode/

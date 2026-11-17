@@ -1,6 +1,5 @@
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import TextLoader, PyPDFLoader
-from config import settings
 from utils.logger import logger
 
 def load_txt_file(file_path: str):

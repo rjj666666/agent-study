@@ -1,6 +1,11 @@
 from loguru import logger
 from config import settings
 import sys
+from pathlib import Path
+
+# 自动创建日志目录
+log_path = Path(settings.LOG_FILE)
+log_path.parent.mkdir(exist_ok=True)
 
 logger.remove()
 logger.add(

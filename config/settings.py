@@ -1,27 +1,31 @@
-from pydantic_settings import BaseSettings
-from dotenv import load_dotenv
+from pathlib import Path
 import os
+from dotenv import load_dotenv
 
-load_dotenv()
+LLM_TEMPERATURE = 0
 
-class Settings(BaseSettings):
-    # 智谱（OpenAI兼容调用方式）
-    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
-    OPENAI_BASE_URL: str = os.getenv("OPENAI_BASE_URL", "")
-    MODEL_NAME: str = os.getenv("MODEL_NAME", "glm-5.3-flash")
-    LLM_TEMPERATURE: float = 0.0
+# 项目根目录（当前文件向上一层，也就是 agent_study/）
+BASE_DIR = Path(__file__).parent.parent
 
-    # Chroma向量库
-    CHROMA_PERSIST_PATH: str = "./chroma_db"
-    CHROMA_COLLECTION_NAME: str = "knowledge_base"
+# 加载根目录下的 .env
+load_dotenv(BASE_DIR / ".env")
 
-    # Embedding & Rerank
-    EMBEDDING_MODEL_NAME: str = "BAAI/bge-small-zh-v1.5"
-    RERANK_MODEL_NAME: str = "BAAI/bge-reranker-base"
-    RAG_TOP_K: int = 5
-    RERANK_TOP_N: int = 3
+# ========== 智谱 LLM 配置 ==========
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL")
+MODEL_NAME = os.getenv("MODEL_NAME", "glm-5.3-flash")
 
-    # 日志
-    LOG_FILE: str = "./agent.log"
+# ========== RAG & 向量库配置 ==========
+EMBED_MODEL_NAME = "BAAI/bge-small-zh-v1.5"
+CHROMA_PERSIST_DIR = BASE_DIR / "chroma_db"
+KNOWLEDGE_FILE = BASE_DIR / "data" / "knowledge.txt"
 
-settings = Settings()
+# ========== 审计日志配置 ==========
+AUDIT_LOG_PATH = BASE_DIR / "logs" / "audit.log"
+
+# 日志配置
+LOG_FILE = BASE_DIR / "logs" / "agent.log"
+
+# 重排配置（之前也要的，一起放这里）
+RERANK_MODEL_NAME = "BAAI/bge-reranker-base"
+RERANK_TOP_N = 3

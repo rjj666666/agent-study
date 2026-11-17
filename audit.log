@@ -1,2 +1,0 @@
-[2026-11-12 16:20:51] tool_calls=[{'name': 'calculator', 'args': {'a': 1, 'b': 2}, 'id': 'call_-7086061414032339731', 'type': 'tool_call'}] | approve=同意
-[2026-11-12 16:23:24] tool_calls=[{'name': 'calculator', 'args': {'a': 123, 'b': 456}, 'id': 'call_-7086060898636265071', 'type': 'tool_call'}] | approve=同意
