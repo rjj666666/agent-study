@@ -38,11 +38,19 @@ def human_approve_node(state: AgentState):
         refuse_msg = HumanMessage(content="人工拒绝本次工具调用，停止执行。")
         return {"messages": [refuse_msg]}
 
-# ========== 路由 ==========
+# ========== 路由（重点改这里！） ==========
 def route_after_agent(state: AgentState):
     last_msg = state["messages"][-1]
     if hasattr(last_msg, "tool_calls") and last_msg.tool_calls:
-        return "human_approve"
+        # 拿到第一个工具名称
+        tool_name = last_msg.tool_calls[0]["name"]
+        if tool_name == "rag_search_tool":
+            # RAG检索，直接去工具，跳过审批
+            return "tools"
+        elif tool_name == "calculator":
+            # 计算器，需要审批
+            return "human_approve"
+    # 没有工具调用，直接结束
     return END
 
 def route_after_approve(state: AgentState):
@@ -58,8 +66,8 @@ workflow.add_node("human_approve", human_approve_node)
 workflow.add_node("tools", ToolNode(tools))
 
 workflow.add_edge(START, "agent")
-workflow.add_conditional_edges("agent", route_after_agent, {"human_approve": "human_approve", END: END})
-workflow.add_conditional_edges("human_approve", route_after_approve, {"tools": "tools", END: END})
+workflow.add_conditional_edges("agent", route_after_agent)
+workflow.add_conditional_edges("human_approve", route_after_approve)
 workflow.add_edge("tools", "agent")
 
 graph = workflow.compile()
